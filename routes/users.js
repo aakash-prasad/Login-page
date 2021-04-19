@@ -12,70 +12,44 @@ router.get('/login', (req, res) => {
 router.get('/register', (req, res) => {
     res.send('Registeration Succesful');
 })
+// const register_handler =async (req, res)=>{
 
-router.post('/register', (req, res)=>{
+// }
+// router.post('/register' , register_handler)
+router.post('/register', async (req, res)=>{
     const{ firstName, lastName, email, password } = req.body;
     let errors =[];
     if(password.length < 6){
         errors.push('Password should be atleast 6 character long')
+        return res.send(`Cannot sign in ${errors}`);
     }
-    else if(!firstName || !lastName || !email || !password){
+    if(!firstName || !lastName || !email || !password){
         errors.push( `No fields can be empty `);
-        res.send(errors)
+        return res.send(`Cannot sign in ${errors}`);
     }
-    else{
-        //Authentication Success
-        if(errors.length > 0){
-            res.send(`Cannot Sign in ${errors}`)
-        }
-        res.send(`registration Succesful`);
-        
-        const test1 = async()=>{
+    
+    
+    else{        
             try{
                 const check = await User.findOne({email:req.body.email})
-           if(email){
-                    res.send(`email id already exist`);
-                }
+                    if(check){
+                        res.send(`email id already exist`);
+                    }
                 else{
                     //Creating the new user
                     const newUser = new User({firstName: firstName, 
-                        lastname:lastName, 
+                        lastName:lastName, 
                         email:email, 
                         password:password});
-
                     //Password Hashing:
-                    const test2 = async ()=>{
                         try{
                             const hash  = await bcrypt.hash(newUser.password, 10)
                             newUser.password = hash;    
-                            newUser.save();
+                            const save = await newUser.save();
                          }catch(err){console.log(`Error in hashing ${err}`)}
-                    }
-                    test2();
-                    res.send(`new user created`);
+                        res.send(`new user created`);
                  }
-             }catch(err){console.log(err)}
-        }
-        test1();
-            
-            
-        
-        
-
-        
-          
-
-            // .then(user=>{
-            //     if(user){
-            //         res.send(`email id already exist`);
-            //     }
-            //     else{
-            //         res.send(`new user created`);
-            //     }
-            // })
-            // .catch(err=>console.log(`the error is ${err}`))
-        
-        
+            }catch(err){console.log(err)}        
     }
 })
 module.exports = router;
