@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-var bodyParser = require('body-parser')
-
+const bodyParser = require('body-parser')
+const session  = require('session')
 const app = express();
 
 //DB Config
