@@ -5,51 +5,47 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
+ router.post('/login', async(req, res)=>{
+    try{
+        const userdbData = await User.findOne({email: req.body.email }).exec();
+     if(userdbData.email === req.body.email) {
+        const match = await bcrypt.compare(req.body.password, userdbData.password)
+    if(match){
+        jwt.sign({ User }, 'shhh', { expiresIn: '30s' }, (err, token)=>{ 
+        if(err) console.log(err);
+        return res.json({token});
+        })
+        return res.sendStatus(200);  
+        } 
+        return res.sendStatus(403);
+    }
+     res.sendStatus(400);
+ }catch(err){console.log(`The error in try catch block ${err}`)}
+});
 
- let user = mongoose.model('users', User);
-// //Login Page
-// router.post('/login', async(req, res)=>{
-//     user.find({email: req.body.email}, (error, data)=>{
-//         if(error) console.log(`There is an error in find() ${error}`);
-//         console.log(data);
-//     })
-    // const emailCheck = await User.findOne({/*Get email from the db */emailCheck: req.body.email });
-    // if(emailCheck) {
-    // const passwordCheck = await bcrypt.compare(req.body.password,'pass' Get the password from the db ) 
-    // if(passwordCheck) res.status(200).send(`Login Success`);
-    //     res.status(401).send(`Wrong password`);
-    // }
-    // res.status(400).send(`Email id not registered`);
-    
-//     const user = {
-//         firstName:firstName,
-//         lastName: lastName,
-//         email: email,
-//         password: password
-//     }
-//     jwt.sign({ user }, 'shhh', (err, token)=>{
-//         res.json({token});
-//         console.log(`The web token is ${token}`)
-//     })
-// });
 
-// const verifyToken = (req, res, next)=>{
-//     const bearerHeader = req.headers['authorization'];
-//     if(typeof bearerHeader !== undefined){
-//         const bearer = bearerHeader.split(' ');
-//         const bearerToken = bearer[1];
-//         req.token = bearerToken;
-//         next();
-//     }
-//     res.sendstatus(403);
+const checkToken = (req, res, next)=>{
+    const header = req.headers['authorization'];
+    if(typeof header !== undefined){
+        const bearer = header.split(' ');
+        const token = bearer[1];
+        req.token = token;
+        next();
+    }
+    res.sendStatus(403);
+}
 
-// }
-// router.post('/dashoard',verifyToken,(req, res)=>{
-//     jwt.verify(req.token, 'shhh', (err, authData)=>{
-//         if(err) res.sendstatus(403);
-//         res.json('This is user dashoard which is password protected');
-//     })
-// })
+
+router.post('/dashboard',checkToken,(req, res)=>{
+    jwt.verify(req.token, 'shhh', (err, authData)=>{
+        if(err) res.sendStatus(403);
+        console.log('You are inside a protected route');
+        res.json({message: 'successfully accesed your protected route'});
+        authData
+    })
+})
+
+
 router.post('/register', async (req, res)=>{
     const{ firstName, lastName, email, password } = req.body;
     let errors =[];
