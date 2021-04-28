@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const todoschema = require('../models/todoschema');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const jwt_decode = require("jwt-decode");
+const todoModel = require("../models/todoschema");
 
  router.post('/login', async(req, res)=>{
     try{
@@ -11,22 +14,18 @@ const jwt = require('jsonwebtoken');
      if(userdbData.email === req.body.email) {
         const match = await bcrypt.compare(req.body.password, userdbData.password)
     if(match){
-        jwt.sign({ User }, 'shhh', { expiresIn: '30s' }, (err, token)=>{ 
+        jwt.sign({ userdbData }, 'shhh', { expiresIn: '1h' }, (err, token)=>{ 
         if(err) console.log(err);
-        return res.json({token});
+        res.json({token});
         })
-        return res.sendStatus(200);  
         } 
-        return res.sendStatus(403);
     }
-     res.sendStatus(400);
  }catch(err){console.log(`The error in try catch block ${err}`)}
 });
 
-
 const checkToken = (req, res, next)=>{
     const header = req.headers['authorization'];
-    if(typeof header !== undefined){
+    if(typeof header!== undefined){
         const bearer = header.split(' ');
         const token = bearer[1];
         req.token = token;
@@ -36,14 +35,23 @@ const checkToken = (req, res, next)=>{
 }
 
 
-router.post('/dashboard',checkToken,(req, res)=>{
-    jwt.verify(req.token, 'shhh', (err, authData)=>{
-        if(err) res.sendStatus(403);
-        console.log('You are inside a protected route');
-        res.json({message: 'successfully accesed your protected route'});
-        authData
-    })
-})
+ router.post('/posts', checkToken, (req, res)=>{
+    try{
+        jwt.verify(req.token, 'shhh', async (err, authData)=>{
+        if(err) return res.sendStatus(403);
+        return res.json({message: `successfully logged in`})
+        console.log(`Connected to the protected route`);
+        //Create Post        
+        const {text} = req.body;
+        const newPost = new todoschema({
+            text: text
+        });
+        const saving = await newPost.save();
+        console.log(saving);
+        res.json({message:"A new Post created"})  
+        })
+    }catch(err){console.log('Error in creating post' +err)}
+ })
 
 
 router.post('/register', async (req, res)=>{
@@ -62,7 +70,6 @@ router.post('/register', async (req, res)=>{
             lastName:lastName, 
             email:email, 
             password:password});
-        console.log("New User created")
         //Password Hashing:
         const hash  = await bcrypt.hash(newUser.password, 10)
         newUser.password = hash;    
