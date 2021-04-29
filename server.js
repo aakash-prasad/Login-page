@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 //Routes
 app.use('/', require('./routes/index'))
 app.use('/users', require('./routes/users'));
-
+app.use('/post', require('./routes/post'))
 
 app.listen(5000, ()=>{
 	console.log("Server Running on 5000")
