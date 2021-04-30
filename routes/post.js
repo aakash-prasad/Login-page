@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const posts = require('../models/posts');
+const post = require('../models/post');
+const jwt = require('jsonwebtoken');
 
 
 const checkToken = (req, res, next)=>{
@@ -17,21 +18,22 @@ const checkToken = (req, res, next)=>{
 
 
 router.post('/newposts', checkToken, (req, res)=>{
-    try{
+    
         jwt.verify(req.token, 'shhh', async (err, authData)=>{
         if(err) return res.sendStatus(403);
-        return res.json({message: `successfully logged in`})
+        res.json({message: `successfully logged in`})
         console.log(`Connected to the protected route`);
         //Create Post        
         const {text} = req.body;
-        const newPost = new posts({
+        const newPost = new post({
             text: text
         });
-        const saving = await newPost.save();
-        console.log(saving);
-        res.json({message:"A new Post created"})  
-        })
-    }catch(err){console.log('Error in creating post' +err)}
+        try{
+        	const saving = await newPost.save();
+        	console.log('This is saving: '+saving);
+        	res.json({message:"A new Post created"})	
+        }catch(err){console.log('error in saving' +err)}     
+    })
  })
 
 
@@ -51,3 +53,5 @@ router.put('/deleteposts', async (req, res)=>{
         res.json(posts  )
     })
  })
+
+ module.exports = router;

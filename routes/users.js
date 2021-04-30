@@ -11,8 +11,8 @@ const jwt_decode = require("jwt-decode");
         const userdbData = await User.findOne({email: req.body.email }).exec();
      if(userdbData.email === req.body.email) {
         const match = await bcrypt.compare(req.body.password, userdbData.password)
-    if(match){
-        jwt.sign({ userdbData }, 'shhh', { expiresIn: '1h' }, (err, token)=>{ 
+     if(match){
+        jwt.sign({ userdbData }, 'shhh', { expiresIn: '5h' }, (err, token)=>{ 
         if(err) console.log(err);
         res.json({token});
         })
@@ -32,7 +32,7 @@ router.post('/register', async (req, res)=>{
     
     try{
         const check = await User.findOne({email:req.body.email})
-        if(check) return res.status(400).json({status: 400, error: 'E-mail ID is taken already. Try another once'});
+        if(check) res.status(400).json({status: 400, error: 'E-mail ID is taken already. Try another once'});
         //Creating the new user
         const newUser = new User({firstName: firstName, 
             lastName:lastName, 
@@ -42,7 +42,7 @@ router.post('/register', async (req, res)=>{
         const hash  = await bcrypt.hash(newUser.password, 10)
         newUser.password = hash;    
         const save = await newUser.save();
-        return res.status(201).json({status: 201, message:'User successfully created', token: '123'});
+        res.status(201).json({status: 201, message:'User successfully created', token: '123'});
     }catch(err){console.log(err)}   
 })
 module.exports = router;

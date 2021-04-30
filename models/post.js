@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const posts = new mongoose.Schema({
 	text: String,
- 	completed: Boolean,
 });
 
-mongoose.exports = new mongoose.model("posts", posts);
+const post = new mongoose.model("posts", posts);
+module.exports = post;
