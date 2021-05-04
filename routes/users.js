@@ -12,7 +12,7 @@ const jwt_decode = require("jwt-decode");
      if(userdbData.email === req.body.email) {
         const match = await bcrypt.compare(req.body.password, userdbData.password)
      if(match){
-        jwt.sign({ userdbData }, 'shhh', { expiresIn: '5h' }, (err, token)=>{ 
+        jwt.sign({ userdbData }, 'shhh', { expiresIn: '12h' }, (err, token)=>{ 
         if(err) console.log(err);
         res.json({token});
         })

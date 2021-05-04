@@ -3,36 +3,39 @@ const router = express.Router();
 const User = require('../models/User');
 const post = require('../models/post');
 const jwt = require('jsonwebtoken');
+const jwt_decode = require("jwt-decode");
+
+//Authorization -->  bearer<token>
 
 
 const checkToken = (req, res, next)=>{
     const header = req.headers['authorization'];
-    if(typeof header!== undefined){
-        const bearer = header.split(' ');
-        const token = bearer[1];
-        req.token = token;
-        next();
-    }
-    res.sendStatus(403);
+    if(typeof header== undefined) res.sendStatus(401);
+    const bearer = header.split(' ');
+    const token = bearer[1];
+    req.token = token;
+    //return res.json({message: "Successfull"})
+    next();
 }
 
 
-router.post('/newposts', checkToken, (req, res)=>{
-    
+router.post('/newposts', checkToken, async(req, res)=>{    
         jwt.verify(req.token, 'shhh', async (err, authData)=>{
-        if(err) return res.sendStatus(403);
-        res.json({message: `successfully logged in`})
+        if(err) console.log(`Error in verification ${err}`)        
         console.log(`Connected to the protected route`);
-        //Create Post        
+        //Create Post
+        const decoded = jwt_decode(req.token);
+        const userId = decoded.userdbData._id;        
         const {text} = req.body;
         const newPost = new post({
-            text: text
+            text: text,
+            userId: userId
         });
         try{
         	const saving = await newPost.save();
-        	console.log('This is saving: '+saving);
-        	res.json({message:"A new Post created"})	
-        }catch(err){console.log('error in saving' +err)}     
+        	 res.json({message:"A new Post created"})
+        }catch(err){console.log(`Error in saving ${err}`)}            
+    		      
     })
  })
 
@@ -52,6 +55,16 @@ router.put('/deleteposts', async (req, res)=>{
         if(err) res.json({message: "There was an error while updating your post"});
         res.json(posts  )
     })
+ })
+
+ router.post('/getAllPosts',checkToken, async(req,res)=>{
+ 	try{
+ 		const decodedToken = jwt_decode(req.token)
+ 		const userId = decodedToken.userdbData._id;
+ 		const userPost = await post.findById(userId)
+ 		console.log(userPost);	
+ 	}catch(err){console.log(`The error is ${err}`)}
+ 	res.sendStatus(200);
  })
 
  module.exports = router;
