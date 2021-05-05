@@ -79,4 +79,27 @@ router.put('/deleteposts', async (req, res)=>{
  	res.json({allPost});
  })
 
+router.post('/userWithPosts', async (req,res)=>{
+	const userData = await User.find({})
+	const firstName= userData[0].firstName;
+	const email = userData[0].email;
+	
+	const userPostArray = [];
+	
+	const allPost = post.findOne({userId:userData[0].id})
+	console.log('Output of allPost: '+allPost)
+	// const userPostObject= {
+	// 	'postId':,
+	// 	'text':
+	// }
+	const userWithPost = {
+		'username' : firstName,
+		'email': email,
+		'Post': userPostArray
+	}
+	console.log(userWithPost)
+	res.sendStatus(200);
+})
+ 
+
  module.exports = router;
