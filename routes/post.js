@@ -57,14 +57,26 @@ router.put('/deleteposts', async (req, res)=>{
     })
  })
 
- router.post('/getAllPosts',checkToken, async(req,res)=>{
- 	try{
+ router.post('/getUserPost',checkToken, async(req,res)=>{
+ 	
  		const decodedToken = jwt_decode(req.token)
  		const userId = decodedToken.userdbData._id;
- 		const userPost = await post.findById(userId)
- 		console.log(userPost);	
+ 		try{
+ 		const getPostObject= await post.findOne({userId:userId})
+ 		console.log(getPostObject)
+ 		const userPost = getPostObject.text;
+ 		res.json({Post: userPost})
  	}catch(err){console.log(`The error is ${err}`)}
- 	res.sendStatus(200);
+ })
+
+ router.post('/getAllUsers' ,async (req,res)=>{
+ 	const allUser = await User.find({})
+ 	res.json({allUser});
+ })
+
+ router.post('/getAllPosts', async(req,res)=>{
+ 	const allPost = await post.find({})
+ 	res.json({allPost});
  })
 
  module.exports = router;
