@@ -80,25 +80,27 @@ router.put('/deleteposts', async (req, res)=>{
  })
 
 router.post('/userWithPosts', async (req,res)=>{
+	let total = await User.find({}).count();
 	const userData = await User.find({})
-	const firstName= userData[0].firstName;
-	const email = userData[0].email;
-	
-	const userPostArray = [];
-	
-	const allPost = post.findOne({userId:userData[0].id})
-	console.log('Output of allPost: '+allPost)
-	// const userPostObject= {
-	// 	'postId':,
-	// 	'text':
-	// }
-	const userWithPost = {
-		'username' : firstName,
-		'email': email,
-		'Post': userPostArray
-	}
-	console.log(userWithPost)
-	res.sendStatus(200);
+	let test = [];
+	for(let j=0; j<total; j++){
+		const userPostArray = [];
+		const firstName= userData[j].firstName;
+		const email = userData[j].email;
+		const allPost = await post.find({userId:userData[j].id})
+		for(let i =0; i<allPost.length; i++){
+			userPostArray.push({text:allPost[i].text})
+			
+		}
+		const userWithPost = {
+		username : firstName,
+		email: email,
+		Post: userPostArray
+		}
+		test.push(userWithPost)
+	}	
+	res.json({test})
+	//res.sendStatus(200);	
 })
  
 
